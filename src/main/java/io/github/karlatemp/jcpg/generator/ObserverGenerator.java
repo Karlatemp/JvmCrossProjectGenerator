@@ -36,4 +36,9 @@ public class ObserverGenerator implements ProjectGenerator {
         printFileWritten(path);
         delegate.writeFileWB(path, action);
     }
+
+    @Override
+    public void runIfNotExists(String path, Action2<ProjectGenerator, String> action) throws Exception {
+        delegate.runIfNotExists(path, ($, p) -> action.act(this, p));
+    }
 }

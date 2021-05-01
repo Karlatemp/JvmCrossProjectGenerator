@@ -1,5 +1,7 @@
 package io.github.karlatemp.jcpg.generator;
 
+import io.github.karlatemp.jcpg.ProjectGenerator;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,6 +27,13 @@ public class DirBasedGenerator extends AbstractGenerator {
         f.getParentFile().mkdirs();
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(f))) {
             action.act(os);
+        }
+    }
+
+    @Override
+    public void runIfNotExists(String path, Action2<ProjectGenerator, String> action) throws Exception {
+        if (!new File(baseDir, path).exists()) {
+            action.act(this, path);
         }
     }
 }

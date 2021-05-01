@@ -245,6 +245,12 @@ public class JvmCrossProjectGenerator {
 
     private static final ClassLoader CCL = JvmCrossProjectGenerator.class.getClassLoader();
 
+    private static void copyResourceIfNotExists(String name, String to, ProjectGenerator generator) throws Exception {
+        generator.runIfNotExists(to, ($, $$) -> {
+            copyResource(name, to, generator);
+        });
+    }
+
     private static void copyResource(String name, String to, ProjectGenerator generator) throws Exception {
         generator.writeFile(to, stream -> {
             try (InputStream rs = CCL.getResourceAsStream("jcpg-resources/" + name)) {
@@ -260,7 +266,7 @@ public class JvmCrossProjectGenerator {
         context.setVariable("settings", settings);
 
         { // gradle scripts
-            generator.writeFileW("settings.gradle" + (
+            generator.writeFileWIfNotExists("settings.gradle" + (
                     settings.kotlinScript ? ".kts" : ""
             ), writer -> {
                 TEMPLATE_ENGINE.process("gradle/settings", context, writer);
@@ -268,16 +274,16 @@ public class JvmCrossProjectGenerator {
                     writer.append("\ninclude(\":ci-release-helper\")\n");
                 }
             });
-            generator.writeFileW("build.gradle" + (
+            generator.writeFileWIfNotExists("build.gradle" + (
                     settings.kotlinScript ? ".kts" : ""
             ), writer -> {
                 TEMPLATE_ENGINE.process("gradle/build", context, writer);
             });
-            copyResource("gradlew.sh", "gradlew", generator);
-            copyResource("gradle/gradle-wrapper.jar", "gradle/wrapper/gradle-wrapper.jar", generator);
-            copyResource("gradle/gradle-wrapper.properties", "gradle/wrapper/gradle-wrapper.properties", generator);
+            copyResourceIfNotExists("gradlew.sh", "gradlew", generator);
+            copyResourceIfNotExists("gradle/gradle-wrapper.jar", "gradle/wrapper/gradle-wrapper.jar", generator);
+            copyResourceIfNotExists("gradle/gradle-wrapper.properties", "gradle/wrapper/gradle-wrapper.properties", generator);
             if (settings.mainModulePath != null) {
-                generator.writeFileW(settings.mainModulePath + "/build.gradle" + (
+                generator.writeFileWIfNotExists(settings.mainModulePath + "/build.gradle" + (
                         settings.kotlinScript ? ".kts" : ""
                 ), writer -> {
                     TEMPLATE_ENGINE.process("gradle/submain.build", context, writer);
@@ -285,7 +291,7 @@ public class JvmCrossProjectGenerator {
             }
         }
         { // native
-            generator.writeFileW(settings.nativePath + "/CMakeLists.txt", writer -> {
+            generator.writeFileWIfNotExists(settings.nativePath + "/CMakeLists.txt", writer -> {
                 TEMPLATE_ENGINE.process("native/CMakeList", context, writer);
             });
             {
@@ -336,7 +342,7 @@ public class JvmCrossProjectGenerator {
                     copyResource("native-includes/win32/jni_md.h", settings.nativePath + "/includes/jni/win32/jni_md.h", generator);
                 }
             }
-            generator.writeFileW(settings.nativePath + "/src/lib.cpp", writer -> {
+            generator.writeFileWIfNotExists(settings.nativePath + "/src/lib.cpp", writer -> {
                 writer.append("#include <jni.h>\n");
             });
         }
@@ -364,7 +370,7 @@ public class JvmCrossProjectGenerator {
                 TEMPLATE_ENGINE.process("gradle/ci-release-helper", context, writer);
             });
         }
-        generator.writeFileW(".gitignore", writer -> {
+        generator.writeFileWIfNotExists(".gitignore", writer -> {
             writer.append(".idea").append('\n');
             writer.append(".gradle").append('\n');
             writer.append("*.class").append('\n');
