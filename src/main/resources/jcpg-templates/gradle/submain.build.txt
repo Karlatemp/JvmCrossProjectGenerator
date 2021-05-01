@@ -1,0 +1,5 @@
+plugins {[# th:if="${settings.kotlinScript}"]
+    id("java")
+[/][# th:if="${!settings.kotlinScript}"]
+    id "java"
+[/]}

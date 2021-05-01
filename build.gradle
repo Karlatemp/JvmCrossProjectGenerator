@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.fusesource.jansi:jansi:2.3.2'
+    api 'org.jline:jline:3.19.0'
+    api 'org.thymeleaf:thymeleaf:3.0.12.RELEASE'
+    api 'com.google.code.gson:gson:2.8.6'
+}
+
+tasks.withType(JavaCompile.class) { JavaCompile task ->
+    task.sourceCompatibility = JavaVersion.VERSION_11
+    task.targetCompatibility = JavaVersion.VERSION_11
+}

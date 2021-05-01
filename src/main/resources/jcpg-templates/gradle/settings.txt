@@ -1,0 +1,16 @@
+rootProject.name = "[[${settings.projectName}]]"
+[# th:if="${settings.kotlinScript}"]
+fun includeProject(name: String, path: String) {
+[/][# th:if="${!settings.kotlinScript}"]
+def includeProject = { String name, String path ->
+[/]    include(name)
+    project(name).projectDir = [# th:if="!${settings.kotlinScript}"]new [/]File(rootDir, path)
+}
+
+[# th:if="${settings.mainModuleName != null}"]
+includeProject(":[[${
+    settings.mainModuleName
+}]]", "[[${
+    settings.mainModulePath
+}]]")
+[/]

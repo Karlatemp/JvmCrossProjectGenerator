@@ -1,0 +1,44 @@
+plugins {
+    id "java"
+}
+
+[# th:if="${settings.mainModuleName != null}"]project(':[[${settings.mainModuleName}]]').afterEvaluate {[/]
+
+task buildPackedJar(type: Jar) {
+    archiveFileName.set('packed-jar.jar')
+
+    def jarTask = [# th:if="${settings.mainModuleName == null}"
+        ]rootProject[/][# th:if="${settings.mainModuleName != null}"
+        ]project(':[[${settings.mainModuleName}]]')[/].tasks.jar
+    dependsOn(jarTask)
+    from(zipTree(jarTask.archiveFile.get().asFile))
+
+    def getExtName = { String name ->
+        def i = name.lastIndexOf('.')
+        if (i == -1) return ''
+        return name.substring(i)
+    }
+    def arts = rootProject.file('[[${settings.githubBuildArchivePath}]]')
+    if (arts.isDirectory()) {
+        def subsystems = arts.listFiles()
+        if (subsystems != null) {
+            for (File subsystem : subsystems) {
+                def libs = subsystem.listFiles()
+                if (libs != null && libs.length == 1) {
+                    def libS = libs[0]
+                    def libRenamed = new File(subsystem, 'testing-' + subsystem.name + getExtName(libs[0].name))
+                    if (libS.name != libRenamed.name) {
+                        libS.renameTo(libRenamed)
+                    }
+
+                    from(libRenamed) {
+                        into '[[${settings.nativeResourceLocation}]]'
+                    }
+                }
+            }
+        }
+    }
+}
+
+[# th:if="${settings.mainModuleName != null}"]}[/]
+
